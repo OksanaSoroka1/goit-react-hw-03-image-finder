@@ -1,25 +1,13 @@
 import { Component } from 'react';
 import './App.css';
 import { Searchbar } from './components/Searchbar';
-import { searchPhotos } from './API/photo-api';
-import { ImageGallery } from './components/ImageGallery';
-import { Button } from './components/Button';
-import { LoaderSpinner } from './components/Loader';
+import { GalleryRender } from './components/GalleryRender';
 import { Modal } from './components/Modal';
-
-const Status = {
-  IDLE: 'idle',
-  PENDING: 'pending',
-  RESOLVED: 'resolved',
-  REJECTED: 'rejected',
-};
 
 class App extends Component {
   state = {
     search: '',
-    searchArr: [],
-    status: Status.IDLE,
-    error: null,
+
     openModal: false,
     modalImgData: {
       src: '',
@@ -27,38 +15,8 @@ class App extends Component {
     },
   };
 
-  componentDidUpdate(prevProps, prevState) {
-    const prevSearch = prevState.search;
-    const nextSearch = this.state.search;
-    if (prevSearch !== nextSearch) {
-      this.setState({ status: Status.PENDING });
-
-      setTimeout(() => {
-        searchPhotos(nextSearch, prevSearch)
-          .then(arr =>
-            this.setState({ searchArr: arr, status: Status.RESOLVED }),
-          )
-          .catch(error => {
-            this.setState({ error, status: Status.REJECTED });
-          });
-      }, 1000);
-    }
-  }
   onSearchSubmit = data => {
     this.setState({ search: data });
-  };
-
-  onLoadMore = () => {
-    searchPhotos(this.state.search, this.state.search)
-      .then(arr =>
-        this.setState(prevState => ({
-          searchArr: [...prevState.searchArr, ...arr],
-          status: Status.RESOLVED,
-        })),
-      )
-      .catch(error => {
-        this.setState({ error, status: Status.REJECTED });
-      });
   };
 
   toggleModal = () => {
@@ -75,19 +33,13 @@ class App extends Component {
   };
 
   render() {
-    const { status, searchArr, openModal, modalImgData, error } = this.state;
+    const { openModal, modalImgData, search } = this.state;
     return (
       <div className="App">
         <Searchbar onSubmit={this.onSearchSubmit} />
+        {/* {search !== '' && } */}
+        <GalleryRender onModalOpen={this.onModalOpen} search={search} />
 
-        {status === 'pending' && <LoaderSpinner />}
-        {status === 'resolved' && (
-          <ImageGallery
-            searchValueArr={searchArr}
-            openModal={this.onModalOpen}
-          />
-        )}
-        {status === 'resolved' && <Button onLoadMore={this.onLoadMore} />}
         {openModal === true && (
           <Modal
             onClose={this.toggleModal}
@@ -95,7 +47,6 @@ class App extends Component {
             alt={modalImgData.alt}
           />
         )}
-        {error && alert(`${error.message}`)}
       </div>
     );
   }
