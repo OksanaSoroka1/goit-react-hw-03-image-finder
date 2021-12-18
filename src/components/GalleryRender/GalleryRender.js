@@ -3,6 +3,7 @@ import { searchPhotos } from '../../API/photo-api';
 import { ImageGallery } from '../ImageGallery';
 import { Button } from '../Button';
 import { LoaderSpinner } from '../Loader';
+import { Error } from '../Error';
 import { Fragment } from 'react';
 
 const Status = {
@@ -58,7 +59,7 @@ class GalleryRender extends Component {
       return <LoaderSpinner />;
     }
     if (status === 'rejected') {
-      return <strong>{error.message}</strong>;
+      return <Error message={error.message} />;
     }
 
     if (status === 'resolved') {
